@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'corsheaders',
+
+    #Local Apps
+    
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +79,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+AUTH_USER_MODEL = 'accounts.User'
 
 
 # Database
