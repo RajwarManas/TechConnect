@@ -2,7 +2,8 @@ from rest_framework import generics, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserRegistrationSerializer, UserLoginSerializer
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, ProfileSerializer
 from .models import User
 
 
@@ -22,3 +23,10 @@ class UserLoginAPIView(APIView):
             status = status.HTTP_200_OK
             )
     
+
+class ProfileAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile
