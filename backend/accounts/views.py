@@ -3,9 +3,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, ProfileSerializer
-from .models import User
-
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, ProfileUpdateSerializer, ProfileListSerializer, SkillSerializer
+from .models import User, Skill, Profile
+from .pagination import ProfileListPagination
 
 class UserRegisterAPIView(generics.CreateAPIView):
     queryset= User.objects.all()
@@ -24,9 +24,21 @@ class UserLoginAPIView(APIView):
             )
     
 
-class ProfileAPIView(generics.RetrieveUpdateAPIView):
-    serializer_class = ProfileSerializer
+class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user.profile
+    
+
+class ProfileListAPIView(generics.ListAPIView):
+    serializer_class=ProfileListSerializer
+    pagination_class=ProfileListPagination
+    permission_classes=[IsAuthenticated]
+    queryset=Profile.objects.all()  
+
+class SkillsAPIView(generics.ListAPIView):
+    serializer_class = SkillSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Skill.objects.all()

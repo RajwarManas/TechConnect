@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, Profile
+from .models import User, Profile, Skill
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -39,7 +39,11 @@ class UserLoginSerializer(serializers.Serializer):
         return attrs
     
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.all(), 
+        many=True
+    )
     class Meta:
         model = Profile
         fields = (
@@ -53,4 +57,29 @@ class ProfileSerializer(serializers.ModelSerializer):
             "linkedin_url",
             "portfolio_url",
             "email_visibility",
+            "skills",
+        )
+
+
+class ProfileListSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    skills = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    class Meta:
+        model=Profile
+        fields=(
+            "user",
+            "bio",
+            "branch",
+            "graduation_year",
+            "looking_for",
+            "availability",
+            "skills"
+        )
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = (
+            "id",
+            "name",
         )

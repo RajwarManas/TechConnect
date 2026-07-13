@@ -35,6 +35,10 @@ class Profile(models.Model):
         on_delete= models.CASCADE,
         related_name="profile",
     )
+    skills = models.ManyToManyField(
+        "accounts.Skill",
+        related_name="profiles",
+    )
     bio = models.TextField(max_length=300, blank=True)
     college = models.CharField(max_length=50, blank=True)
     branch = models.CharField(max_length=20, blank=True)
@@ -58,6 +62,14 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+    
+
+class Skill(models.Model):
+    class Meta:
+        ordering=["name"]
+    name = models.CharField(max_length=100,blank=True, unique=True)
+    def __str__(self):
+        return self.name
     
 
 

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Profile
+from .models import User, Profile, Skill
 
 
 @admin.register(User)
@@ -58,4 +58,17 @@ class ProfileAdmin(admin.ModelAdmin):
         "user__email",
         "user__username",
         "college",
+    )
+    filter_horizontal = (
+        "skills",
+    )
+
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+    )
+    search_fields = (
+        "name",
     )
