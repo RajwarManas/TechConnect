@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth import authenticate
-from .models import User, Profile, Skill
+from .models import *
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -37,7 +38,23 @@ class UserLoginSerializer(serializers.Serializer):
 
         attrs["user"]=user
         return attrs
+
+class UserLogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(write_only=True)
+    def validate(self, attrs):
+        try:
+            RefreshToken(attrs["refresh"])
+        except TokenError:
+            raise serializers.ValidationError(
+                {"refresh": "invalid or expired efresh token"}
+            )
+        
+        return attrs
     
+    def save(self):
+        refresh_token=self.validated_data["refresh"]
+        token=RefreshToken(refresh_token)
+        token.blacklist
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
@@ -83,3 +100,67 @@ class SkillSerializer(serializers.ModelSerializer):
             "id",
             "name",
         )
+
+class ProjectCreateSerializer(serializers.ModelSerializer):
+    required_skills=serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.all(),
+        many=True
+    )
+    class Meta:
+        model=Project
+        fields=(
+            "title",
+            "description",
+            "required_skills",
+            "max_members",
+        )
+
+class ProjectListSerializer(serializers.ModelSerializer):
+    owner=serializers.StringRelatedField(read_only=True)
+    required_skills=SkillSerializer(many=True, read_only=True)
+    class Meta:
+        model=Project
+        fields=(
+            "id",
+            "title",
+            "description",
+            "owner",
+            "required_skills",
+            "status",
+            "max_members",
+            "created_at",
+        )
+
+class ProjectUpdateSerializer(serializers.ModelSerializer):
+    required_skills=serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.all(),
+        many=True
+    )
+    class Meta:
+        model=Project
+        fields=(
+            "title",
+            "description",
+            "required_skills",
+            "status",
+            "max_members",
+        )
+    
+
+class JoinRequestListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=JoinRequest
+        fields=(
+            "user",
+            "project",
+            "status"
+        )
+
+
+class DashboardSerializer(serializers.Serializer):
+    projects_owned = serializers.IntegerField()
+    projects_joined = serializers.IntegerField()
+    pending_requests_received = serializers.IntegerField()
+    pending_requests_sent = serializers.IntegerField()
+    recruiting_projects = serializers.IntegerField()
+    completed_projects = serializers.IntegerField()

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Profile, Skill
+from .models import *
 
 
 @admin.register(User)
@@ -71,4 +71,28 @@ class SkillAdmin(admin.ModelAdmin):
     )
     search_fields = (
         "name",
+    )
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display=(
+        "title",
+        "owner",
+        "status",
+        "max_members",
+        "is_active",
+        "created_at",
+    )
+    search_fields = (
+        "title",
+        "owner__username",
+        "owner__email",
+    )
+
+@admin.register(JoinRequest)
+class JoinRequestAdmin(admin.ModelAdmin):
+    list_display=(
+        "user",
+        "project",
+        "status",
     )

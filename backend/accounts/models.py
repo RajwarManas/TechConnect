@@ -71,7 +71,76 @@ class Skill(models.Model):
     def __str__(self):
         return self.name
     
+class Project(models.Model):
+    class Status(models.TextChoices):
+        RECRUITING=("RECRUITING", "Recruiting")
+        FULL=("FULL", "Full")
+        COMPLETED=("COMPLETED", "Completed")
+
+    class Meta:
+        ordering=["-created_at"]
+        
+    owner=models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="owned_projects"
+    )
+    title=models.CharField(max_length=100)
+    description=models.TextField(max_length=500)
+    required_skills=models.ManyToManyField(
+        "accounts.Skill",
+        related_name='projects'
+    )
+    status=models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.RECRUITING
+    )
+    max_members=models.PositiveIntegerField()
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    is_active=models.BooleanField(default=True, db_index=True)
+    members=models.ManyToManyField(
+        "accounts.User",
+        related_name="member_projects",
+        blank=True,
+    )
+    
+    def __str__(self):
+        return f"{self.title} ({self.owner.username})"
 
 
+class JoinRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING=("PENDING", "Pending")
+        ACCEPTED=("ACCEPTED", "Accepted")
+        REJECTED=("REJECTED", "Rejected")
+    class Meta:
+        ordering=["-created_at"]
+        constraints=[
+            models.UniqueConstraint(
+                fields=['user', 'project'],
+                name="unique_user_project_request"
+            )
+        ]
 
+    user=models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="join_requests"
+    )
+    project=models.ForeignKey(
+        "accounts.Project",
+        on_delete=models.CASCADE,
+        related_name="join_requests"
+    )
+    status=models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.PENDING)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.project.title} ({self.status})"
     

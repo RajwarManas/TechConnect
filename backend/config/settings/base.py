@@ -41,8 +41,10 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     'corsheaders',
+    'drf_spectacular',
 
     #Local Apps
     
@@ -148,6 +150,36 @@ REST_FRAMEWORK = {
         "rest_framework.pagination.PageNumberPagination",
 
     "PAGE_SIZE": 10,
+
+    "DEFAULT_SCHEMA_CLASS":
+        "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "TechConnect API",
+    
+    "DESCRIPTION":
+        "Backend API for the TechConnect student networking platform",
+
+    "VERSION": "1.0.0",
+
+    "SERVE_INCLUDE_SCHEMA": False,
+
+    "COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+
+    "SECURITY": [
+        {
+            "BearerAuth": [],
+        }
+    ],
 }
 
 CORS_ALLOWED_ORIGINS = [
