@@ -14,10 +14,14 @@ from .permissions import *
 from .models import *
 from .pagination import *
 
+
+### AUTHENTICATION
+
 @extend_schema(
     summary="Register a new user",
     description="Creates a new user account and automatically creates an associated profile",
-    tags=["Authentication"]
+    tags=["Authentication"],
+    responses={201: UserRegistrationSerializer}
 )
 class UserRegisterAPIView(generics.CreateAPIView):
     queryset= User.objects.all()
@@ -39,7 +43,11 @@ class UserLoginAPIView(APIView):
             status = status.HTTP_200_OK
             )
     
-
+@extend_schema(
+    summary="Logout User",
+    description="Logout users using refresh token blacklisting",
+    tags=["Authentication"]
+)
 class UserLogoutAPIView(APIView):
     permission_classes=[IsAuthenticated]
     serializer_class=UserLogoutSerializer
@@ -53,11 +61,14 @@ class UserLogoutAPIView(APIView):
             status=status.HTTP_200_OK
         )
         
-    
+
+### PROFILE 
+
 @extend_schema(
     summary="Retrieve or update profile",
     description="Retrieve or update authenticated user's profile information",
-    tags=["Profile"]
+    tags=["Profile"],
+    responses={200: ProfileUpdateSerializer}
 )
 class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileUpdateSerializer
@@ -106,6 +117,7 @@ class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
             description="Order profiles by supported fields such as college or graduation_year"
         ),
     ],
+    responses={200: ProfileListSerializer(many=True)}
 )
 class ProfileListAPIView(generics.ListAPIView):
     serializer_class=ProfileListSerializer
@@ -132,16 +144,29 @@ class ProfileListAPIView(generics.ListAPIView):
             profiles=profiles.filter(looking_for=looking_for)
         return profiles
 
+
+### SKILLS
+
 @extend_schema(
     summary="List predefined skills",
     description="Retrieve all available predefined skills",
-    tags=["Skills"]
+    tags=["Skills"],
+    responses={200: SkillSerializer(many=True)}
 )
 class SkillsAPIView(generics.ListAPIView):
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated]
     queryset = Skill.objects.all()
 
+
+### PROJECT
+
+@extend_schema(
+    summary="Create a project",
+    description="Create a new project owned by the authenticated user.",
+    tags=["Projects"],
+    responses={201: ProjectListSerializer}
+)
 class ProjectCreateAPIView(generics.CreateAPIView):
     serializer_class=ProjectCreateSerializer
     permission_classes=[IsAuthenticated]
@@ -149,6 +174,24 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+@extend_schema(
+    summary="List projects",
+    description="Retrieve a paginated list of active projects with support for searching, filtering and ordering.",
+    tags=["Projects"],
+    parameters=[
+        OpenApiParameter(name="search", type=str, location=OpenApiParameter.QUERY, required=False,
+                         description="Search projects by title or description."),
+        OpenApiParameter(name="required_skills", type=int, location=OpenApiParameter.QUERY, required=False,
+                         many=True, description="Filter projects by one or more required skill IDs."),
+        OpenApiParameter(name="status", type=str, location=OpenApiParameter.QUERY, required=False,
+                         description="Filter projects by project status."),
+        OpenApiParameter(name="owner", type=str, location=OpenApiParameter.QUERY, required=False,
+                         description='Use "me" to retrieve only projects owned by the authenticated user.'),
+        OpenApiParameter(name="ordering", type=str, location=OpenApiParameter.QUERY, required=False,
+                         description="Order by title, created_at or updated_at."),
+    ],
+    responses={200: ProjectListSerializer(many=True)}
+)
 class ProjectListAPIView(generics.ListAPIView):
     serializer_class=ProjectListSerializer
     pagination_class=StandardPagination
@@ -177,6 +220,12 @@ class ProjectListAPIView(generics.ListAPIView):
             projects=projects.filter(owner=self.request.user)
         return projects
     
+@extend_schema(
+    summary="Retrieve, update or delete a project",
+    description="Retrieve project details or update/delete a project if you are its owner.",
+    tags=["Projects"],
+    responses={200: ProjectListSerializer}
+)
 class ProjectDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsAuthenticated, IsProjectOwner]
     queryset=Project.objects.filter(is_active=True)
@@ -189,6 +238,11 @@ class ProjectDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 ### Join Requests
 
+@extend_schema(
+    summary="Send join request",
+    description="Send a join request to a recruiting project.",
+    tags=["Join Requests"]
+)
 class SendJoinRequestAPIView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self, request, pk):
@@ -232,6 +286,11 @@ class SendJoinRequestAPIView(APIView):
             status=status.HTTP_201_CREATED
         )
 
+@extend_schema(
+    summary="Accept join request",
+    description="Accept a pending join request and add the user as a project member.",
+    tags=["Join Requests"]
+)
 class AcceptJoinRequestAPIView(APIView):
     permission_classes=[IsAuthenticated]
 
@@ -264,6 +323,11 @@ class AcceptJoinRequestAPIView(APIView):
             status=status.HTTP_200_OK
         )
     
+@extend_schema(
+    summary="Reject join request",
+    description="Reject a pending join request for a project.",
+    tags=["Join Requests"]
+)
 class RejectJoinRequestAPIView(APIView):
     permission_classes=[IsAuthenticated]
 
@@ -287,6 +351,12 @@ class RejectJoinRequestAPIView(APIView):
             status=status.HTTP_200_OK
         )
     
+@extend_schema(
+    summary="My join requests",
+    description="Retrieve all join requests submitted by the authenticated user.",
+    tags=["Join Requests"],
+    responses={200: JoinRequestListSerializer(many=True)}
+)
 class MyJoinRequestsAPIVIew(generics.ListAPIView):
     permission_classes=[IsAuthenticated]
     pagination_class=StandardPagination
@@ -294,6 +364,12 @@ class MyJoinRequestsAPIVIew(generics.ListAPIView):
     def get_queryset(self):
         return JoinRequest.objects.filter(user=self.request.user)
     
+@extend_schema(
+    summary="Project join requests",
+    description="Retrieve all join requests for a project owned by the authenticated user.",
+    tags=["Join Requests"],
+    responses={200: JoinRequestListSerializer(many=True)}
+)
 class ProjectJoinRequestsAPIView(generics.ListAPIView):
     permission_classes=[IsAuthenticated]
     pagination_class=StandardPagination
@@ -308,6 +384,14 @@ class ProjectJoinRequestsAPIView(generics.ListAPIView):
         return project.join_requests.all()
     
 
+### DASHBOARD
+
+@extend_schema(
+    summary="Dashboard",
+    description="Retrieve dashboard statistics for the authenticated user including owned projects, joined projects and join request statistics.",
+    tags=["Dashboard"],
+    responses={200: DashboardSerializer}
+)
 class DashboardAPIView(APIView):
     serializer_class=DashboardSerializer
 
