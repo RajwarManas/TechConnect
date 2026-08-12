@@ -1,4 +1,4 @@
-import "./StatCard.css"
+import "./statCard.css"
 
 function StatCard({ title, value }) {
     return (
