@@ -97,6 +97,9 @@ DATABASES = {
         "PASSWORD": config("DB_PASSWORD"),
         "HOST": config("DB_HOST"),
         "PORT": config("DB_PORT"),
+        "OPTIONS": {
+            "sslmode": config("DB_SSLMODE", default="disable"),
+        },
     }
 }
 
