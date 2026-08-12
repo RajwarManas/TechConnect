@@ -19,16 +19,12 @@ class Profile(models.Model):
         HACKATHON = ("HACKATHON", "Hackathon Team")
         STUDY = ("STUDY", "Study Buddy")
         OPENSOURCE = ("OPENSOURCE", "Open Source")
-        RESEARCH = ("RESEARCH", "Research")
+        RESEARCH = ("RESEARCH", "Research") 
 
     class Availability(models.TextChoices):
         AVAILABLE = ("AVAILABLE", "Available")
         BUSY = ("BUSY", "Busy")
         NOTLOOKING = ("NOTLOOKING", "Not Looking")
-
-    class Visibility(models.TextChoices):
-        PUBLIC = ("PUBLIC", "Public")
-        PRIVATE = ("PRIVATE", "Private")
 
     user = models.OneToOneField(
         "accounts.User",
@@ -58,7 +54,6 @@ class Profile(models.Model):
     github_url = models.URLField(max_length=100, blank=True)
     linkedin_url = models.URLField(max_length=100, blank=True)
     portfolio_url = models.URLField(max_length=100, blank=True)
-    email_visibility = models.CharField(max_length=30, choices=Visibility.choices, default=Visibility.PRIVATE)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

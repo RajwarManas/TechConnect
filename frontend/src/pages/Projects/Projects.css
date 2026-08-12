@@ -1,0 +1,117 @@
+.projects-page {
+    max-width: 1300px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.projects-title {
+    margin-bottom: 28px;
+    color: #111827;
+}
+
+.projects-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* -------------------- */
+/* Filters */
+/* -------------------- */
+
+.filters-panel {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    position: sticky;
+    top: 90px;
+}
+
+.filters-panel h2 {
+    margin-bottom: 20px;
+    color: #111827;
+    font-size: 1.25rem;
+}
+
+.filters-panel > * {
+    margin-bottom: 22px;
+}
+
+.filters-panel label {
+    display: block;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+/* -------------------- */
+/* Inputs */
+/* -------------------- */
+
+.filters-panel input,
+.filters-panel select,
+.filters-panel textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
+    background: #F9FAFB;
+    font-size: .95rem;
+    transition: .2s;
+    box-sizing: border-box;
+}
+
+.filters-panel input:focus,
+.filters-panel select:focus,
+.filters-panel textarea:focus {
+    outline: none;
+    border-color: #2563EB;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* -------------------- */
+/* Skills */
+/* -------------------- */
+
+.filters-panel .skill-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.filters-panel input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563EB;
+}
+
+/* -------------------- */
+/* Project list */
+/* -------------------- */
+
+.projects-results {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* -------------------- */
+/* Responsive */
+/* -------------------- */
+
+@media (max-width: 900px) {
+
+    .projects-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-panel {
+        position: static;
+    }
+}

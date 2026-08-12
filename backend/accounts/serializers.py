@@ -56,14 +56,35 @@ class UserLogoutSerializer(serializers.Serializer):
         token=RefreshToken(refresh_token)
         token.blacklist
 
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = (
+            "id",
+            "name",
+        )
+
+
 class ProfileUpdateSerializer(serializers.ModelSerializer):
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skill.objects.all(), 
-        many=True
+    skills = SkillSerializer(
+        many=True,
+        read_only=True
     )
+    skill_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.all(),
+        many=True,
+        source="skills",
+        write_only=True,
+        required=False,
+    )
+    id = serializers.IntegerField(source="user.id", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
     class Meta:
         model = Profile
         fields = (
+            "id",
+            "username",
             "bio", 
             "college", 
             "branch", 
@@ -73,32 +94,32 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             "github_url",
             "linkedin_url",
             "portfolio_url",
-            "email_visibility",
             "skills",
+            "skill_ids",
         )
 
 
 class ProfileListSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    skills = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    id = serializers.IntegerField(source="user.id", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
     class Meta:
-        model=Profile
+        model=Profile   
         fields=(
             "user",
+            "id",
+            "username",
             "bio",
+            "college",
             "branch",
             "graduation_year",
             "looking_for",
             "availability",
-            "skills"
-        )
-
-class SkillSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Skill
-        fields = (
-            "id",
-            "name",
+            "github_url",
+            "linkedin_url",
+            "portfolio_url",
+            "skills",
         )
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -115,9 +136,29 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             "max_members",
         )
 
+class ProjectOwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+        )
+
 class ProjectListSerializer(serializers.ModelSerializer):
-    owner=serializers.StringRelatedField(read_only=True)
+    owner=ProjectOwnerSerializer(read_only=True)
     required_skills=SkillSerializer(many=True, read_only=True)
+    has_pending_request=serializers.SerializerMethodField()
+
+    def get_has_pending_request(self, obj):
+        request = self.context["request"]
+        user = request.user
+        if user.is_anonymous:
+            return False
+        return JoinRequest.objects.filter(
+            project=obj,
+            user=user,
+            status=JoinRequest.Status.PENDING
+        ).exists()
     class Meta:
         model=Project
         fields=(
@@ -129,6 +170,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "status",
             "max_members",
             "created_at",
+            "has_pending_request",
         )
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
@@ -146,17 +188,54 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             "max_members",
         )
     
-
-class JoinRequestListSerializer(serializers.ModelSerializer):
+class JoinRequestProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model=JoinRequest
-        fields=(
-            "user",
-            "project",
-            "status"
+        model = Project
+        fields = (
+            "id",
+            "title",
+            "status",
         )
 
 
+class JoinRequestUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+        )
+
+
+class JoinRequestSerializer(serializers.ModelSerializer):
+    project = JoinRequestProjectSerializer(read_only=True)
+    user = JoinRequestUserSerializer(read_only=True)
+
+    class Meta:
+        model = JoinRequest
+        fields = (
+            "id",
+            "user",
+            "project",
+            "status",
+        )
+
+class ProjectAttentionSerializer(serializers.ModelSerializer):
+    pending_requests = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "title",
+            "pending_requests",
+        )
+
+    def get_pending_requests(self, obj):
+        return obj.join_requests.filter(
+            status=JoinRequest.Status.PENDING
+        ).count()
+    
 class DashboardSerializer(serializers.Serializer):
     projects_owned = serializers.IntegerField()
     projects_joined = serializers.IntegerField()
@@ -164,3 +243,4 @@ class DashboardSerializer(serializers.Serializer):
     pending_requests_sent = serializers.IntegerField()
     recruiting_projects = serializers.IntegerField()
     completed_projects = serializers.IntegerField()
+    projects_needing_attention = ProjectAttentionSerializer(many=True)

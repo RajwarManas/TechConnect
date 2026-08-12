@@ -1,9 +1,17 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { login } from "../../api/auth";
+import { useState, useContext } from "react";
+import { useNavigate, NavLink } from "react-router-dom";
+
+import { AuthContext } from "../../contexts/AuthContext";
+
+import TextInput from "../../components/forms/TextInput";
+import FormError from "../../components/common/FormError/FormError";
+
+import "./Login.css";
 
 function Login() {
+
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
 
     const [credentials, setCredentials] = useState({
         email: "",
@@ -11,73 +19,104 @@ function Login() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState({});
 
-    function handleChange(event) {
-        const { name, value } = event.target;
+    function handleChange(e) {
 
-        setCredentials((prev) => ({
+        setCredentials(prev => ({
             ...prev,
-            [name]: value,
+            [e.target.name]: e.target.value,
         }));
+
     }
 
-    async function handleSubmit(event) {
-        event.preventDefault();
+    async function handleSubmit(e) {
 
-        setError("");
+        e.preventDefault();
+        console.log("Login Button clicked")
+        setErrors({});
         setLoading(true);
 
         try {
-            // TODO:
-            // 1. Call login(credentials)
-            const tokens = await login(credentials)
-            console.log(tokens)
-            // 2. Store access & refresh tokens
-            localStorage.setItem("access", tokens.access)
-            localStorage.setItem("refresh", tokens.refresh)
-            // 3. Navigate to dashboard
-            navigate("/")
+            console.log(credentials)
+            await login(credentials)
+            navigate("/");
 
         } catch (error) {
-            // TODO:
-            // Display appropriate error message
-            console.log(error)
+
+            console.log(error.response?.data);
+            setErrors(error.response?.data || {});
 
         } finally {
+
             setLoading(false);
+
         }
+
     }
 
     return (
-        <div>
-            <h1>Login</h1>
 
-            {error && <p>{error}</p>}
+        <div className="login-page">
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={credentials.email}
-                    onChange={handleChange}
-                />
+            <div className="login-card">
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={credentials.password}
-                    onChange={handleChange}
-                />
+                <h1>Welcome Back</h1>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+                <p className="login-subtitle">
+                    Sign in to continue collaborating.
+                </p>
+
+                <form
+                    className="login-form"
+                    onSubmit={handleSubmit}
+                >
+
+                    <TextInput
+                        label="Email  "
+                        name="email"
+                        type="email"
+                        value={credentials.email}
+                        onChange={handleChange}
+                        placeholder="Enter your email"
+                    />
+
+                    <TextInput
+                        label="Password  "
+                        name="password"
+                        type="password"
+                        value={credentials.password}
+                        onChange={handleChange}
+                        placeholder="Enter your password"
+                    />
+
+                    <FormError
+                        error={errors.detail || errors.non_field_errors}
+                    />
+
+                    <button
+                        className="login-btn"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
+
+                </form>
+
+                <p className="login-footer">
+                    Don't have an account?{" "}
+                    <NavLink to="/register">
+                        Register
+                    </NavLink>
+                </p>
+
+            </div>
+
         </div>
+
     );
+
 }
 
 export default Login;

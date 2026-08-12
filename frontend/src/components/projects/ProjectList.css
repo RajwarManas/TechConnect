@@ -1,0 +1,23 @@
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.empty-projects {
+    background: white;
+    border: 1px dashed #D1D5DB;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.empty-projects h2 {
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.empty-projects p {
+    color: #6B7280;
+    margin: 0;
+}

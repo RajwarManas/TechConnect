@@ -16,8 +16,3 @@ export async function logout() {
         refresh,
     })
 }
-
-export async function getProfile(   ){
-    const response = await api.get("auth/profile/")
-    return response.data
-}

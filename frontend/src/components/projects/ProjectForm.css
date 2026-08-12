@@ -1,0 +1,62 @@
+.project-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.project-form h1 {
+    color: #111827;
+    margin-bottom: 8px;
+    font-size: 2rem;
+}
+
+.project-form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.primary-btn {
+    background: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.primary-btn:hover {
+    background: #1D4ED8;
+}
+
+.secondary-btn {
+    background: white;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.secondary-btn:hover {
+    background: #F3F4F6;
+}
+
+@media (max-width: 700px) {
+
+    .project-form-actions {
+        flex-direction: column;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        width: 100%;
+    }
+
+}

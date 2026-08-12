@@ -1,0 +1,261 @@
+.profiles-page {
+    max-width: 1500px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.profiles-page h1 {
+    margin-bottom: 24px;
+    font-size: 1.9rem;
+    color: #111827;
+}
+
+.profiles-layout {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.profile-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+/* FILTER PANEL */
+
+.filters-panel {
+    position: sticky;
+    top: 80px;
+
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 18px;
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filters-panel label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.filters-panel input,
+.filters-panel textarea,
+.filters-panel select {
+    width: 100%;
+    padding: 9px 11px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    font-size: 0.9rem;
+
+    transition: 0.2s;
+}
+
+.filters-panel input:focus,
+.filters-panel textarea:focus,
+.filters-panel select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* RESULTS */
+
+.profile-results {
+    min-width: 0
+}
+
+/* SKILLS */
+
+.skill-items {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 5px 0;
+}
+
+.skill-items input {
+    width: 15px;
+    height: 15px;
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+.skill-items label {
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #374151;
+    margin: 0;
+}
+
+/* FILTER BUTTONS */
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.filter-actions button {
+    flex: 1;
+    padding: 9px 10px;
+
+    border-radius: 8px;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.clear-filters-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.apply-filters-btn {
+    background: #2563eb;
+    color: #fff;
+    border: 1px solid #2563eb;
+}
+
+.apply-filters-btn:hover {
+    background: #1d4ed8;
+}
+
+/* PAGINATION */
+
+.pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 24px;
+    padding: 14px 4px;
+}
+
+.results-count {
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-btn {
+    padding: 8px 14px;
+
+    background: #ffffff;
+    color: #374151;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.page-info {
+    min-width: 90px;
+
+    text-align: center;
+
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* TABLET */
+
+@media (max-width: 1200px) {
+    .profile-results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+    .profiles-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-panel {
+        position: static;
+    }
+
+    .profile-results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .profiles-page {
+        padding: 0 14px;
+        margin: 20px auto;
+    }
+
+    .profiles-page h1 {
+        font-size: 1.6rem;
+    }
+
+    .profile-results {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+    }
+    .pagination-bar {
+        flex-direction: column;
+        gap: 14px;
+        align-items: stretch;
+    }
+
+    .results-count {
+        text-align: center;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+    }
+}

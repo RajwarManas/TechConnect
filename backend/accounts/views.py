@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import get_object_or_404
+from django.db.models import Count, Q
 
 from .serializers import *
 from .permissions import *
@@ -120,29 +121,57 @@ class ProfileUpdateAPIView(generics.RetrieveUpdateAPIView):
     responses={200: ProfileListSerializer(many=True)}
 )
 class ProfileListAPIView(generics.ListAPIView):
-    serializer_class=ProfileListSerializer
-    pagination_class=StandardPagination
-    permission_classes=[IsAuthenticated]
-    filter_backends=[OrderingFilter]
-    ordering_fields= (
+    serializer_class = ProfileListSerializer
+    pagination_class = StandardPagination
+    permission_classes = [IsAuthenticated]
+    filter_backends = [
+        SearchFilter,
+        OrderingFilter,
+    ]
+    search_fields = [
+        "user__username",
+        "bio",
+        "college",
+        "branch",
+    ]
+    ordering_fields = (
         "college",
         "graduation_year",
     )
     def get_queryset(self):
         profiles = Profile.objects.all()
-        skills=self.request.query_params.getlist("skill")
-        college=self.request.query_params.get("college")
-        availability=self.request.query_params.get("availability")
-        looking_for=self.request.query_params.get("looking_for")
+
+        skills = self.request.query_params.getlist("skill")
+
+        print("SKILLS RECEIVED:", skills)
+
+        college = self.request.query_params.get("college")
+        availability = self.request.query_params.get("availability")
+        looking_for = self.request.query_params.get("looking_for")
+
         if skills:
             profiles = profiles.filter(skills__id__in=skills).distinct()
+
         if college:
-            profiles=profiles.filter(college__iexact=college)
+            profiles = profiles.filter(college__icontains=college)
+
         if availability:
-            profiles=profiles.filter(availability=availability)
+            profiles = profiles.filter(availability=availability)
+
         if looking_for:
-            profiles=profiles.filter(looking_for=looking_for)
+            profiles = profiles.filter(looking_for=looking_for)
+
         return profiles
+    
+class ProfileDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = ProfileListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Profile.objects.all()
+    
+    def get_object(self):
+        return Profile.objects.get(user_id=self.kwargs["pk"])
 
 
 ### SKILLS
@@ -157,6 +186,7 @@ class SkillsAPIView(generics.ListAPIView):
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated]
     queryset = Skill.objects.all()
+    pagination_class = None
 
 
 ### PROJECT
@@ -219,6 +249,17 @@ class ProjectListAPIView(generics.ListAPIView):
         if owner == "me":
             projects=projects.filter(owner=self.request.user)
         return projects
+    
+class MyProjectsAPIView(generics.ListAPIView):
+    serializer_class = ProjectListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            Project.objects
+            .filter(owner=self.request.user)
+            .order_by("-created_at")
+        )
     
 @extend_schema(
     summary="Retrieve, update or delete a project",
@@ -355,12 +396,12 @@ class RejectJoinRequestAPIView(APIView):
     summary="My join requests",
     description="Retrieve all join requests submitted by the authenticated user.",
     tags=["Join Requests"],
-    responses={200: JoinRequestListSerializer(many=True)}
+    responses={200: JoinRequestSerializer(many=True)}
 )
 class MyJoinRequestsAPIVIew(generics.ListAPIView):
     permission_classes=[IsAuthenticated]
     pagination_class=StandardPagination
-    serializer_class=JoinRequestListSerializer
+    serializer_class=JoinRequestSerializer
     def get_queryset(self):
         return JoinRequest.objects.filter(user=self.request.user)
     
@@ -368,12 +409,12 @@ class MyJoinRequestsAPIVIew(generics.ListAPIView):
     summary="Project join requests",
     description="Retrieve all join requests for a project owned by the authenticated user.",
     tags=["Join Requests"],
-    responses={200: JoinRequestListSerializer(many=True)}
+    responses={200: JoinRequestSerializer(many=True)}
 )
 class ProjectJoinRequestsAPIView(generics.ListAPIView):
     permission_classes=[IsAuthenticated]
     pagination_class=StandardPagination
-    serializer_class=JoinRequestListSerializer
+    serializer_class=JoinRequestSerializer
 
     def get_queryset(self):
         project=get_object_or_404(Project, pk=self.kwargs["pk"])
@@ -381,7 +422,9 @@ class ProjectJoinRequestsAPIView(generics.ListAPIView):
             raise PermissionDenied(
                 "You are not authorized to view join requests for this project."
             )
-        return project.join_requests.all()
+        return project.join_requests.filter(
+            status = JoinRequest.Status.PENDING
+        )
     
 
 ### DASHBOARD
@@ -396,6 +439,17 @@ class DashboardAPIView(APIView):
     serializer_class=DashboardSerializer
 
     def get(self, request):
+        projects_needing_attention = (
+            Project.objects.filter(owner=request.user)
+            .annotate(
+                pending_count=Count(
+                    "join_requests",
+                    filter=Q(join_requests__status=JoinRequest.Status.PENDING)
+                )
+            )
+            .filter(pending_count__gt=0)
+        )
+        
         data={
             "projects_owned": Project.objects.filter(owner=request.user).count(),
             "projects_joined": request.user.member_projects.count(),
@@ -414,10 +468,14 @@ class DashboardAPIView(APIView):
             "completed_projects": Project.objects.filter(
                 owner=request.user,
                 status=Project.Status.COMPLETED
-            ).count()
+            ).count(),
+            "projects_needing_attention": ProjectAttentionSerializer(
+                projects_needing_attention,
+                many=True
+            ).data,
         }
 
-        serializer=DashboardSerializer(data)
+        serializer=DashboardSerializer(instance=data)
         return Response(
             serializer.data,
             status=status.HTTP_200_OK

@@ -3,4 +3,5 @@ export const PATHS = {
     LOGIN: "/login",
     REGISTER: "/register",
     PROFILE: "/profile",
+    PROJECTS: "/projects",
 };

@@ -9,9 +9,6 @@ function GuestNavBar() {
                 TechConnect
             </NavLink>
             <div className="nav-links">
-                <NavLink to={PATHS.HOME}>
-                    Home
-                </NavLink>
                 <NavLink to={PATHS.LOGIN}>
                     Login
                 </NavLink>
