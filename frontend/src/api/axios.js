@@ -13,7 +13,7 @@ api.interceptors.request.use(
             return config
     }
 )
-
+ 
 api.interceptors.response.use(
     function(response){
         return response
@@ -27,7 +27,7 @@ api.interceptors.response.use(
                 const refresh = localStorage.getItem("refresh")
                 console.log("🔄 Refreshing token...");
                 const response = await axios.post(
-                    "http://127.0.0.1:8000/api/auth/token/refresh/",
+                    "auth/token/refresh/",
                     {
                         refresh,
                     }
