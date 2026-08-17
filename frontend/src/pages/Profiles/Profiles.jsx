@@ -106,7 +106,7 @@ function Profiles() {
         async function loadSkills() {
             try {
                 const data = await getSkills();
-                setSkills(data.results);
+                setSkills(data);
             } catch (error) {
                 console.error(error);
             }
