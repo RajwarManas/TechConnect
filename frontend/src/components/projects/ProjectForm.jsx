@@ -21,7 +21,7 @@ function ProjectForm({ project, onSave, onCancel }) {
             try {
                 const data = await getSkills()
                 console.log(data)
-                setSkills(data.results)
+                setSkills(data)
             } catch (error) {
                 console.error(error)
             }
